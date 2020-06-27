@@ -25,7 +25,7 @@ fairly easy to get this running on Node using `tsc` with just a few changes.
 To run in Deno:
 ```bash
 deno run main.ts  # This presents a REPL
-deno run --allow-read main.ts ./test1.lox  # This parses and executes a Lox file
+deno run --unstable --allow-read main.ts ./test1.lox  # This parses and executes a Lox file
 ```
 
 At time of writing, running any code will also print its AST. This is to help 
