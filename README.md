@@ -10,6 +10,12 @@ Beyond my language choice, I've taken several other small liberties in terms of
 architecture so as to make things, in my opinion, more elegant. But the overall
 approach is still tied to the one in the book.
 
+The main difference is that I did away with both the automatic code-generation 
+script and the usage of the Visitor pattern, by just using plain JS objects
+for the AST. This can still be type-safe because of TypeScript's support for
+discriminated unions of object types. It also has the benefit of making it
+trivial to print out the full parse tree as-is.
+
 # Running the code
 
 I've used [Deno](https://deno.land) instead of Node to avoid messing with a 
