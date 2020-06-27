@@ -1,0 +1,20 @@
+
+var add = fun (a, b) {
+    return a + b;
+};
+
+print add(2, 3);
+
+
+
+fun getGreeter(nameGenerator) {
+    return fun () {
+        print "Hello " + nameGenerator() + "!";
+    };
+}
+
+var greeter = getGreeter(fun () {
+    return "B" + "randon";
+});
+
+greeter();

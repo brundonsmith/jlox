@@ -1,0 +1,10 @@
+
+var a = 12;
+
+var b = 5;
+
+if (a + b > 15 and b == 5) {
+    print "yes";
+} else {
+    print "no";
+}
