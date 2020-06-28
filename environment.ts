@@ -23,6 +23,16 @@ export default class Environment {
         }
     }
 
+    assignAt(distance: number, name: Token, value: LoxValue) {
+        const ancestor = this.ancestor(distance);
+
+        if (ancestor == null) {
+            throw RuntimeError(name, `Failed to resolve environemnt for variable '${name.lexeme}' at depth ${distance}.`);
+        } else {
+            ancestor.env[name.lexeme] = value;
+        }
+    }
+
     get(name: Token): LoxValue {
         const identifier = name.lexeme;
 
@@ -33,5 +43,25 @@ export default class Environment {
         } else {
             throw RuntimeError(name, `Undefined variable '${name.lexeme}'.`);
         }
+    }
+
+    getAt(distance: number, name: Token) {
+        const ancestor = this.ancestor(distance);
+
+        if (ancestor == null) {
+            throw RuntimeError(name, `Failed to resolve environemnt for variable '${name.lexeme}' at depth ${distance}.`);
+        } else {
+            return ancestor.env[name.lexeme];
+        }
+    }
+
+    private ancestor(distance: number) {
+        let env: Environment|undefined = this;
+
+        for (let i = 0; i < distance; i++) {
+            env = env?.enclosing;
+        }
+
+        return env;
     }
 }

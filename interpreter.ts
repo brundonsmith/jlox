@@ -7,6 +7,7 @@ export default class Interpreter {
 
     private readonly globals: Environment = new Environment();
     private env = this.globals;
+    private locals = new Map<Expr, number>();
 
     constructor() {
         this.globals.define("clock", {
@@ -19,7 +20,7 @@ export default class Interpreter {
 
     public interpret(statements: Stmt[]) {
         try {
-            for(let statement of statements) {
+            for(const statement of statements) {
                 this.execute(statement);
             }
         } catch (err) {
@@ -37,7 +38,7 @@ export default class Interpreter {
                 break;
             case 'var':
                 {
-                    let val = statement.initializer !== undefined ? this.evaluate(statement.initializer) : null;
+                    const val = statement.initializer !== undefined ? this.evaluate(statement.initializer) : null;
                     this.env.define(statement.name.lexeme, val);
                 }
                 break;
@@ -70,7 +71,7 @@ export default class Interpreter {
         try {
             this.env = blockEnv;
     
-            for (let statement of statements) {
+            for (const statement of statements) {
                 this.execute(statement);
             }
         } finally {
@@ -83,7 +84,15 @@ export default class Interpreter {
             case 'literal':
                 return expression.value;
             case 'variable':
-                return this.env.get(expression.name);
+                {
+                    const distance = this.locals.get(expression);
+
+                    if (distance != null) {
+                        return this.env.getAt(distance, expression.name);
+                    } else {
+                        return this.globals.get(expression.name);
+                    }
+                }
             case 'grouping':
                 return this.evaluate(expression.expression);
             case 'unary':
@@ -130,13 +139,22 @@ export default class Interpreter {
                     ? this.evaluate(expression.case1)
                     : this.evaluate(expression.case2)
             case 'assign':
-                let value = this.evaluate(expression.value);
-                this.env.assign(expression.name, value);
-                return value;
+                {
+                    const value = this.evaluate(expression.value);
+                    const distance = this.locals.get(expression);
+
+                    if (distance != null) {
+                        this.env.assignAt(distance, expression.name, value);
+                    } else {
+                        this.globals.assign(expression.name, value);
+                    }
+
+                    return value;
+                }
             case 'anon-func':
                 return new LoxFunction(expression, this.env);
             case 'call':
-                let func = this.evaluate(expression.func);
+                const func = this.evaluate(expression.func);
 
                 if (!isCallable(func)) {
                     throw RuntimeError(expression.paren, "Can only call functions and classes.");
@@ -148,6 +166,10 @@ export default class Interpreter {
 
                 return func.call(this, expression.args.map(x => this.evaluate(x)));
         }
+    }
+
+    public resolve(expr: Expr, depth: number) {
+        this.locals.set(expr, depth);
     }
 }
 
@@ -181,16 +203,6 @@ const UNARY_FUNCTIONS: {[key in UnaryOpTokenType]: (a: LoxValue) => LoxValue} = 
 
 function equal(a: LoxValue, b: LoxValue): boolean {
     return a === b;
-}
-
-function str(val: LoxValue): string {
-    if(typeof val !== 'string') throw TypeError();
-    return val;
-}
-
-function num(val: LoxValue): number {
-    if(typeof val !== 'number') throw TypeError("Operand must be a number.");
-    return val;
 }
 
 function truthy(val: LoxValue): boolean {

@@ -272,6 +272,7 @@ export const KEYWORDS: {[key: string]: TokenType} = {
 
 // errors
 export function RuntimeError(operator: Token, message: string): RuntimeErrorObj {
+    console.trace();
     return { operator, message }
 }
 

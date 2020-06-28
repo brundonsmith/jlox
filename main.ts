@@ -5,6 +5,7 @@ import Scanner from './scanner.ts';
 import Parser from "./parser.ts";
 import { Token, RuntimeErrorObj, ExprStatement } from "./model.ts";
 import Interpreter from "./interpreter.ts";
+import Resolver from "./resolver.ts";
 
 
 const interpreter = new Interpreter();
@@ -48,6 +49,8 @@ function run(code: string) {
         suppressParseErrors = true;
         let parser = new Parser(tokens);
         let expression = parser.expression();
+        let resolver = new Resolver(interpreter);
+        resolver.resolve(expression);
         console.log('\n' + JSON.stringify(expression, null, 2) + '\n');
 
         console.log(interpreter.evaluate(expression));
@@ -55,6 +58,8 @@ function run(code: string) {
         suppressParseErrors = false;
         let parser = new Parser(tokens);
         let statements = parser.parse();
+        let resolver = new Resolver(interpreter);
+        statements.forEach(s => resolver.resolve(s));
         console.log('\n' + JSON.stringify(statements, null, 2) + '\n');
         interpreter.interpret(statements);
     }
